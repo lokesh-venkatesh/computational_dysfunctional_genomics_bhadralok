@@ -13,6 +13,7 @@ def import_neg_dataset(filepath='neg_dataset.fasta'):
     OUTPUT: a list of strings (DNA sequences) all of equal lengths, 
             corresponding to the negative sequences
     """
+
 def nth_order_markov_matrix(n, seqs):
     """
     INPUTS: 
@@ -27,12 +28,6 @@ def nth_order_markov_matrix(n, seqs):
 
     NOTE: make sure to include pseudocounts... this will definitely matter for larger 'n'.
     """
-
-def gen_pos_model(n, pos_seqs):
-    return nth_order_markov_matrix(n, pos_seqs)
-
-def gen_neg_model(n, neg_seqs):
-    return nth_order_markov_matrix(n, neg_seqs)
 
 def return_dict_of_scores(pos_seqs, neg_seqs, pos_model, neg_model):
     """
@@ -74,8 +69,8 @@ if __name__ == "__main__":
     pos_dataset = import_pos_dataset()
     neg_dataset = import_neg_dataset()
 
-    pos_model = gen_pos_model(n, pos_dataset)
-    neg_model = gen_neg_model(n, neg_dataset)
+    pos_model = nth_order_markov_matrix(n, pos_dataset)
+    neg_model = nth_order_markov_matrix(n, neg_dataset)
 
     dict_of_scores = return_dict_of_scores(pos_dataset, neg_dataset, pos_model, neg_model)
 
