@@ -28,6 +28,8 @@ def nth_order_markov_matrix(n, seqs):
     OUTPUT: a matrix corresponding to the transition probabilities between different states
     (this will basically be a (4^n+1)*4 matrix, 
     the +1 coming from the zeroth order probabilities for the start nucleotide of each sequence)
+
+    NOTE: make sure to include pseudocounts... this will definitely matter for larger 'n'.
     """
 
 def gen_pos_model(n, pos_seqs):
