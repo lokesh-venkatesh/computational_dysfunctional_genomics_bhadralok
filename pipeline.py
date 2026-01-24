@@ -13,12 +13,6 @@ def import_neg_dataset(filepath='neg_dataset.fasta'):
     OUTPUT: a list of strings (DNA sequences) all of equal lengths, 
             corresponding to the negative sequences
     """
-
-n = ... #parameter passed as argument when running the script
-"""ORDER CHOSEN FOR THE MARKOV MODEL"""
-pos_dataset = import_pos_dataset()
-neg_dataset = import_neg_dataset()
-
 def nth_order_markov_matrix(n, seqs):
     """
     INPUTS: 
@@ -28,6 +22,8 @@ def nth_order_markov_matrix(n, seqs):
     OUTPUT: a matrix corresponding to the transition probabilities between different states
     (this will basically be a (4^n+1)*4 matrix, 
     the +1 coming from the zeroth order probabilities for the start nucleotide of each sequence)
+    
+    hint: a_XY = N_XY/N_X (where X and Y are nucleotides)
 
     NOTE: make sure to include pseudocounts... this will definitely matter for larger 'n'.
     """
@@ -37,9 +33,6 @@ def gen_pos_model(n, pos_seqs):
 
 def gen_neg_model(n, neg_seqs):
     return nth_order_markov_matrix(n, neg_seqs)
-
-pos_model = gen_pos_model(n, pos_dataset)
-neg_model = gen_neg_model(n, neg_dataset)
 
 def return_dict_of_scores(pos_seqs, neg_seqs, pos_model, neg_model):
     """
@@ -53,8 +46,6 @@ def return_dict_of_scores(pos_seqs, neg_seqs, pos_model, neg_model):
         and a positive and negative model/matrix
         OUTPUT: score = log_2(pos_model(seq)/neg_model(seq))
         """
-
-dict_of_scores = return_dict_of_scores(pos_dataset, neg_dataset, pos_model, neg_model)
 
 def plot_distributions(n, dict_scores):
     """
@@ -77,8 +68,19 @@ def calculate_AUC_ROC():
     This will be useful when we run the mainpipeline across different values of 'n'.
     """
 
-plot_distributions(n, dict_scores=dict_of_scores)
-plot_ROC()
+if __name__ == "__main__":
+    n = ... #parameter passed as argument when running the script
+    """ORDER CHOSEN FOR THE MARKOV MODEL"""
+    pos_dataset = import_pos_dataset()
+    neg_dataset = import_neg_dataset()
 
-AUC_ROC_val = calculate_AUC_ROC()
-print(AUC_ROC_val)
+    pos_model = gen_pos_model(n, pos_dataset)
+    neg_model = gen_neg_model(n, neg_dataset)
+
+    dict_of_scores = return_dict_of_scores(pos_dataset, neg_dataset, pos_model, neg_model)
+
+    plot_distributions(n, dict_scores=dict_of_scores)
+    plot_ROC()
+
+    AUC_ROC_val = calculate_AUC_ROC()
+    print(AUC_ROC_val)
