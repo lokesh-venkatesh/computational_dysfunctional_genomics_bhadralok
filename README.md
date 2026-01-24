@@ -14,4 +14,4 @@ ALSO TO NOTE: incorporate pseudocounts into the model for larger 'n' (or start w
 
 5. Write a single script that does all of these scripts in sequence for a given input 'n' as well as two inputs of positive and negative sequence sets.
 
-FINALLY: write a master script that does this for all 'n' from i=0 to length L of the sequences given, and for each AUC-ROC value obtained, plot a distribution fo AUC-ROC versus 'n', and find the maximum (or maxima).
+FINALLY: write a master script that does this for all 'n' from i=0 to length L of the sequences given, and for each AUC-ROC value obtained, plot a distribution fo AUC-ROC versus 'n', and find the maximum (or maxima; plural).
