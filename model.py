@@ -1,3 +1,4 @@
+import os
 import math
 import sys
 import numpy as np
@@ -13,8 +14,9 @@ def import_dataset(filepath="dataset.csv", TF_name="CTCF", chromosome_number="Al
     """
     df = pd.read_csv(filepath, header=0, index_col=0, low_memory=False)
     df = df[~df['chrom'].isin(['chr3', 'chr10', 'chr17'])]
-    if chromosome_number in range(1,23):
-        df = df[~df['chrom'].isin([f'chr{chromosome_number}'])]
+    if chromosome_number in range(1,23): # if a specific chromosome number is provided as input
+        df = df[df['chrom'].isin([f'chr{chromosome_number}'])]
+        # otherwise it just returns all sequences from the 19 chromosomes
     pos_dataset = df[df[TF_name] == 'B']['sequence'].tolist()
     neg_dataset = df[df[TF_name] == 'U']['sequence'].tolist()
     return pos_dataset, neg_dataset
@@ -147,7 +149,7 @@ def plot_distributions(n, dict_scores):
     plt.title("Distribution of scores, coloured by whether positive or negative sequence")
     plt.xlabel("Score")
     plt.ylabel("Frequency")
-    plt.savefig(f"{n}-th_order_MM_scores_distribution.png", dpi=300)
+    plt.savefig(f"results/{n}-th_order_MM_scores_distribution.png", dpi=300)
     plt.close()
 
 def plot_ROC(dict_scores):
@@ -162,7 +164,7 @@ def plot_ROC(dict_scores):
     roc_auc = auc(fpr, tpr)
 
     plt.figure(figsize=(8, 6))
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.4f})')
     plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Random Guessing')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -171,7 +173,7 @@ def plot_ROC(dict_scores):
     plt.title(f'ROC Curve for {m}-th order markov model')
     plt.legend(loc='lower right')
     plt.grid(True)
-    plt.savefig(f"{m}-th_order_MM_ROC_curve.png", dpi=300)
+    plt.savefig(f"results/{m}-th_order_MM_ROC_curve.png", dpi=300)
     plt.close()
         
 def calculate_AUC_ROC(dict_scores):
@@ -189,12 +191,15 @@ def calculate_AUC_ROC(dict_scores):
     return roc_auc
 
 if __name__ == "__main__":
-    m = 10 # m = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+    m = 8 # m = int(sys.argv[1]) if len(sys.argv) > 1 else 1
     k = 3
-    chrom_no = 22
-    TF_input = "CTCF"
+    c = 22 # modify such that these are all taken in as CLI arguments
+    TF = "CTCF"
 
-    pos_dataset, neg_dataset = import_dataset(TF_name=TF_input, chromosome_number="All")
+    """NOTE: CROSS-VALIDATION IS YET TO BE IMPLEMENTED IN THIS CODE, AS WELL AS PRC IMPLEMENTATION"""
+
+    os.makedirs("results", exist_ok=True)
+    pos_dataset, neg_dataset = import_dataset(TF_name=TF, chromosome_number="All")
     
     # print(df.iloc[[394517, 394518, 394519, 394520, 394570, 394571, 394572, 394573, 3403336], -1])
     # NOTE: the above nine entries have been removed from the original .tsv files since they DO contain 'N's
