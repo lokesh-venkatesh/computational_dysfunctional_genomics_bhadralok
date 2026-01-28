@@ -1,14 +1,12 @@
-I've carried over the instructions/workflow for the pre-midsem part of the term project into the files. 
+Run the scripts in the below order:
 
-Ignore `generate_dummy.py`, since that is just for generating sequences.
-I will delete that file as soon as Leelavati shares instructions for how to obtain the actual dataset.
+1. data_as_one_tsv.py
+2. model.py
 
-`pipeline.py` is the main script which we need to work on, 
-it basically takes in `n` as input and runs all steps till obtaining the AUC-ROC value,
-all we need to do is fill out the functions I've put in there (right now they're all placeholders)
+**Stuff for Akash to do:**
 
-`master_script.py` is something I will work on myself, 
-that is a very small task once `pipeline.py` can run without any issues.
+1. Implement k-fold cross validation
+2. Proof-read all scripts and run the above-mentioned two scripts locally, make sure there are no bugs
+3. Rewrite completely a `master_script.py` (I scrapped the earlier version) so that it takes the tsv files and original genome files and does whatever the three data_X.py scripts I wrote does.
 
-We will figure out how to split work on the `pipeline.py script` over text.
-Just ignore the other two scripts for the time-being.
+Refer to `resources/Project description.pdf` for details about the project.
