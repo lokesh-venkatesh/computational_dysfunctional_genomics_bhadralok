@@ -244,16 +244,66 @@ if __name__ == "__main__":
     # NOTE: the above nine entries have been removed from the original .tsv files since they DO contain 'N's
     # or in other words, AMBIGOUS NUCLEOTIDE READS!
 
-    pos_model = nth_order_markov_matrix(m, pos_dataset)
-    neg_model = nth_order_markov_matrix(m, neg_dataset)
+    ''' 
+    my attempt at implementing k fold....
+    '''
 
-    dict_of_scores = return_dict_of_scores(m, pos_dataset, neg_dataset, pos_model, neg_model)
+    '''Creating splits'''
 
-    plot_distributions(m, dict_scores=dict_of_scores)
-    plot_ROC(dict_scores=dict_of_scores)
-    AUC_ROC_val = calculate_AUC_ROC(dict_scores=dict_of_scores)
+    pos_kf = KFold(n_splits=k, shuffle=True, random_state=10)
+    neg_kf = KFold(n_splits=k, shuffle=True, random_state=10)
 
-    plot_PRC(dict_scores=dict_of_scores)
-    AUC_PRC_val = calculate_AUC_PRC(dict_scores=dict_of_scores) # what do with this, since you said output of this script should be AUC ROC?
+    pfolds = [test_idx for _, test_idx in pos_kf.split(pos_dataset)]
+    nfolds = [test_idx for _, test_idx in neg_kf.split(neg_dataset)]
 
+    '''storing aucs'''
+
+    roc_aucs = []
+    prc_aucs = []
+
+    '''looping over folds'''
+
+    for fold_index in range(k):
+        print(f"we on da fold {fold_index+1}/{k}")
+
+        '''test set'''
+        postestindex = pfolds[fold_index]
+        negtestindex = nfolds[fold_index]
+
+        '''train set'''
+        postrainidx = np.concatenate(
+            [pfolds[i] for i in range(k) if i != fold_index]
+        )
+        negtrainidx = np.concatenate(
+            [nfolds[i] for i in range(k) if i != fold_index]
+        )
+
+        pos_train = [pos_dataset[i] for i in postrainidx]
+        pos_test  = [pos_dataset[i] for i in postestindex]
+
+        neg_train = [neg_dataset[i] for i in negtrainidx]
+        neg_test  = [neg_dataset[i] for i in negtestindex]
+
+        '''train models'''
+        pos_model = nth_order_markov_matrix(m, pos_train)
+        neg_model = nth_order_markov_matrix(m, neg_train)
+
+        '''score em'''
+        dict_of_scores=return_dict_of_scores(m, pos_test, neg_test, pos_model, neg_model)
+
+        roc_aucs.append(calculate_AUC_PRC(dict_of_scores))
+        prc_aucs.append(calculate_AUC_PRC(dict_of_scores))
+
+    #pos_model = nth_order_markov_matrix(m, pos_dataset)
+    #neg_model = nth_order_markov_matrix(m, neg_dataset) # naur....
+
+    #dict_of_scores = return_dict_of_scores(m, pos_dataset, neg_dataset, pos_model, neg_model)
+
+    #plot_distributions(m, dict_scores=dict_of_scores)
+    #plot_ROC(dict_scores=dict_of_scores)
+    #AUC_ROC_val = calculate_AUC_ROC(dict_scores=dict_of_scores)
+
+    #plot_PRC(dict_scores=dict_of_scores)
+    #AUC_PRC_val = calculate_AUC_PRC(dict_scores=dict_of_scores) # what do with this, since you said output of this script should be AUC ROC?
+    AUC_ROC_val = np.mean(roc_aucs)
     print(AUC_ROC_val)
