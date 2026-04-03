@@ -1,0 +1,17 @@
+ATAC_State,ATAC_Label,Region,Count
+U,Closed (U),CTCF_only,13432
+U,Closed (U),REST_only,6605
+U,Closed (U),EP300_only,3336
+U,Closed (U),CTCF_REST_only,1932
+U,Closed (U),CTCF_EP300_only,69
+U,Closed (U),REST_EP300_only,144
+U,Closed (U),All_three,34
+U,Closed (U),None_bound,218219
+B,Open (B),CTCF_only,14698
+B,Open (B),REST_only,10813
+B,Open (B),EP300_only,11440
+B,Open (B),CTCF_REST_only,14332
+B,Open (B),CTCF_EP300_only,1762
+B,Open (B),REST_EP300_only,3446
+B,Open (B),All_three,2586
+B,Open (B),None_bound,103046

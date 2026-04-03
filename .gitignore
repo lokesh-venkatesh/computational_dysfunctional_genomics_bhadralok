@@ -1,0 +1,7 @@
+data/*.csv
+model_cvae/**/checkpoints/*.pth
+model_cvae/**/*.npy
+data/projectData/*.tsv
+data/
+model_cvae/
+peaks/
