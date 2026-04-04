@@ -1,0 +1,4 @@
+Best Metrics (Epoch 2):
+CTCF [ROC: 0.921 | PRC: 0.486]
+REST [ROC: 0.919 | PRC: 0.366]
+EP300 [ROC: 0.923 | PRC: 0.185]

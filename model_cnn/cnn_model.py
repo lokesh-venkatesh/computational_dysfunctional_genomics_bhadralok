@@ -13,6 +13,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
 
 # ==========================================
 # 1. One-Hot DNA PyTorch Dataset
@@ -28,8 +29,7 @@ class DNASequenceDataset(Dataset):
 
     def __getitem__(self, idx):
         seq = self.sequences[idx].upper()
-        # Create a (4, Length) One-Hot Matrix for Conv1d
-        # PyTorch expects the Channel dimension first!
+        # Create a (4, Length) One-Hot Matrix
         one_hot = np.zeros((4, len(seq)), dtype=np.float32)
         nuc_map = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
         for i, nuc in enumerate(seq):
@@ -40,39 +40,52 @@ class DNASequenceDataset(Dataset):
         return X_seq, self.X_cheat[idx], self.tfs[idx]
 
 # ==========================================
-# 2. Dual-Stream 1D-CNN Architecture
+# 2. Deeper Dual-Stream 1D-CNN (DeepSEA-inspired)
 # ==========================================
 class DualStreamCNN(nn.Module):
-    def __init__(self, num_cheat_features, num_classes=3):
+    def __init__(self, num_cheat_features, num_classes=3, dropout_rate=0.4):
         super(DualStreamCNN, self).__init__()
         
-        # STREAM A: Motif Scanner (1D Convolution)
-        # Using a kernel size of 15 because CTCF motifs are roughly 15-20bp long.
+        # STREAM A: Deep Motif Scanner
         self.conv_stream = nn.Sequential(
-            nn.Conv1d(in_channels=4, out_channels=128, kernel_size=15, padding=7),
+            # Layer 1: Detects primary, low-level motifs (e.g., 5-mers to 15-mers)
+            nn.Conv1d(in_channels=4, out_channels=320, kernel_size=15, padding=7),
+            nn.BatchNorm1d(320),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=4),
-            nn.Dropout(0.2),
+            nn.Dropout1d(dropout_rate / 2.0), # Spatial Dropout
             
-            nn.Conv1d(in_channels=128, out_channels=256, kernel_size=7, padding=3),
+            # Layer 2: Combines low-level motifs into larger structural features
+            nn.Conv1d(in_channels=320, out_channels=480, kernel_size=7, padding=3),
+            nn.BatchNorm1d(480),
             nn.ReLU(),
-            nn.AdaptiveMaxPool1d(1), # Smashes any remaining length dimension down to 1
-            nn.Flatten()             # Output shape: (Batch, 256)
+            nn.MaxPool1d(kernel_size=4),
+            nn.Dropout1d(dropout_rate / 2.0),
+            
+            # Layer 3: Captures long-range dependencies and flanking regions
+            nn.Conv1d(in_channels=480, out_channels=960, kernel_size=5, padding=2),
+            nn.BatchNorm1d(960),
+            nn.ReLU(),
+            
+            nn.AdaptiveMaxPool1d(1), # Smashes length dimension to 1
+            nn.Flatten()             # Output shape: (Batch, 960)
         )
         
-        # STREAM B: Biological Context (Dense Network)
+        # STREAM B: Biological Context
         self.cheat_stream = nn.Sequential(
-            nn.Linear(num_cheat_features, 32),
+            nn.Linear(num_cheat_features, 64),
+            nn.BatchNorm1d(64),
             nn.ReLU(),
-            nn.Dropout(0.2)
+            nn.Dropout(dropout_rate / 2.0)
         )
         
         # FUSION HEAD
         self.classifier = nn.Sequential(
-            nn.Linear(256 + 32, 128),
+            nn.Linear(960 + 64, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(128, num_classes)
+            nn.Dropout(dropout_rate),
+            nn.Linear(256, num_classes)
         )
 
     def forward(self, x_seq, x_cheat):
@@ -83,20 +96,27 @@ class DualStreamCNN(nn.Module):
         return logits
 
 # ==========================================
-# 3. Model Wrapper & Training Logic
+# 3. Training & Inference Wrapper
 # ==========================================
 class DeepCNNModel:
-    def __init__(self, pwm_dir="./pwms/", batch_size=128, learning_rate=1e-3, epochs=30, device=None):
-        self.pwm_dir = pwm_dir
-        self.batch_size = batch_size
-        self.lr = learning_rate
+    def __init__(self, train_data, val_data=None, epochs=30, batch_size=128, lr=1e-3, 
+                 weight_decay=1e-4, dropout_rate=0.4, pwm_dir="./pwms/"):
+                 
+        self.train_data = train_data
+        self.val_data = val_data
         self.epochs = epochs
-        self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.batch_size = batch_size
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.dropout_rate = dropout_rate
+        self.pwm_dir = pwm_dir
         self.tfs = ['CTCF', 'REST', 'EP300']
+        
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+        print(f"Initializing Dual-Stream CNN on: {self.device}")
         
         self.pwms = self._load_pwms()
         self.scaler = StandardScaler()
-        self.model = None
 
     def _load_pwms(self):
         pwms = {}
@@ -173,32 +193,49 @@ class DeepCNNModel:
         y = (df[self.tfs] != 'U').astype(int).values
         return DNASequenceDataset(df['sequence'].tolist(), X_cheat, y)
 
-    def fit(self, train_df, val_df, save_dir="checkpoints"):
-        os.makedirs(save_dir, exist_ok=True)
+    def fit(self, checkpoint_dir="checkpoints", resume_from=None):
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        best_model_path = os.path.join(checkpoint_dir, "best_cnn_model.pth")
+        last_checkpoint_path = os.path.join(checkpoint_dir, "last_cnn_checkpoint.pth")
         
-        print("Preparing Data...")
-        train_dataset = self._prepare_data(train_df, is_train=True)
-        val_dataset = self._prepare_data(val_df, is_train=False)
+        train_dataset = self._prepare_data(self.train_data, is_train=True)
+        val_dataset = self._prepare_data(self.val_data, is_train=False) if self.val_data is not None else None
         
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
+        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False) if val_dataset else None
 
         num_cheat_features = train_dataset.X_cheat.shape[1]
-        self.model = DualStreamCNN(num_cheat_features=num_cheat_features).to(self.device)
+        self.model = DualStreamCNN(
+            num_cheat_features=num_cheat_features, 
+            dropout_rate=self.dropout_rate
+        ).to(self.device)
         
-        # BCEWithLogitsLoss combines Sigmoid and Binary Cross Entropy safely
-        criterion = nn.BCEWithLogitsLoss()
-        optimizer = optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=1e-4)
+        # Mimic the VAE's handling of class imbalance
+        pos_weight = torch.tensor([5.0, 5.0, 5.0]).to(self.device)
+        criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        
+        optimizer = optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
 
+        start_epoch = 1
         best_val_loss = float('inf')
-        best_model_path = os.path.join(save_dir, "best_cnn.pth")
 
-        print(f"\nStarting CNN Training on {self.device}...")
-        for epoch in range(self.epochs):
+        # Resume logic
+        if resume_from and os.path.exists(resume_from):
+            print(f"Resuming training from checkpoint: {resume_from}")
+            checkpoint = torch.load(resume_from, map_location=self.device)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            start_epoch = checkpoint['epoch'] + 1
+            best_val_loss = checkpoint.get('best_val_loss', float('inf'))
+
+        print(f"\nStarting CNN Training (Epoch {start_epoch} to {self.epochs})...")
+        for epoch in range(start_epoch, self.epochs + 1):
             self.model.train()
             train_loss = 0.0
             
-            for x_seq, x_cheat, y in train_loader:
+            loop = tqdm(train_loader, leave=False, desc=f"Epoch {epoch}/{self.epochs} [Train]")
+            for x_seq, x_cheat, y in loop:
                 x_seq, x_cheat, y = x_seq.to(self.device), x_cheat.to(self.device), y.to(self.device)
                 
                 optimizer.zero_grad()
@@ -208,28 +245,61 @@ class DeepCNNModel:
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
+                loop.set_postfix(Loss=loss.item())
                 
-            train_loss /= len(train_loader)
+            avg_train_loss = train_loss / len(train_loader)
 
-            # Validation
-            self.model.eval()
-            val_loss = 0.0
-            with torch.no_grad():
-                for x_seq, x_cheat, y in val_loader:
-                    x_seq, x_cheat, y = x_seq.to(self.device), x_cheat.to(self.device), y.to(self.device)
-                    logits = self.model(x_seq, x_cheat)
-                    loss = criterion(logits, y)
-                    val_loss += loss.item()
-            val_loss /= len(val_loader)
+            val_loss_str = ""
+            if val_loader:
+                self.model.eval()
+                val_loss = 0.0
+                all_preds, all_targets = [], []
+                
+                with torch.no_grad():
+                    for x_seq, x_cheat, y in val_loader:
+                        x_seq, x_cheat, y = x_seq.to(self.device), x_cheat.to(self.device), y.to(self.device)
+                        logits = self.model(x_seq, x_cheat)
+                        loss = criterion(logits, y)
+                        val_loss += loss.item()
+                        
+                        all_preds.append(torch.sigmoid(logits).cpu().numpy())
+                        all_targets.append(y.cpu().numpy())
+                        
+                avg_val_loss = val_loss / len(val_loader)
+                scheduler.step(avg_val_loss)
+                
+                all_preds = np.vstack(all_preds)
+                all_targets = np.vstack(all_targets)
+                metrics_log = []
+                
+                for i, tf in enumerate(self.tfs):
+                    y_true = all_targets[:, i]
+                    y_pred = all_preds[:, i]
+                    if len(np.unique(y_true)) > 1:
+                        fpr, tpr, _ = roc_curve(y_true, y_pred)
+                        prc, rec, _ = precision_recall_curve(y_true, y_pred)
+                        metrics_log.append(f"{tf} [ROC: {auc(fpr, tpr):.3f} | PRC: {auc(rec, prc):.3f}]")
 
-            status = f"Epoch {epoch+1:02d}/{self.epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}"
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                torch.save(self.model.state_dict(), best_model_path)
-                status += " (Saved Best!)"
-            print(status)
+                val_loss_str = f" | Val Loss: {avg_val_loss:.4f}"
+                
+                if avg_val_loss < best_val_loss:
+                    best_val_loss = avg_val_loss
+                    torch.save(self.model.state_dict(), best_model_path)
+                    val_loss_str += " (Saved Best!)"
+                    
+                    with open(os.path.join(checkpoint_dir, "best_metrics_report_cnn.txt"), "w") as f:
+                        f.write(f"Best Metrics (Epoch {epoch}):\n" + "\n".join(metrics_log))
 
-        # Load best model for inference later
+            print(f"Epoch {epoch}/{self.epochs} | Train Loss: {avg_train_loss:.4f}{val_loss_str}")
+            if val_loader: print("    -> Stats:", " || ".join(metrics_log))
+            
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': self.model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'best_val_loss': best_val_loss
+            }, last_checkpoint_path)
+
         if os.path.exists(best_model_path):
             self.model.load_state_dict(torch.load(best_model_path))
 

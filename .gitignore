@@ -6,3 +6,4 @@ peaks/
 model_vae/**/checkpoints/*.pth
 model_vae/**/*.npy
 model_svm/results_latest/checkpoints/
+model_cnn/**/checkpoints/*.pth
