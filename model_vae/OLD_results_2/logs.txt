@@ -1,0 +1,36 @@
+(base) PS C:\Users\lokes\Desktop\CFG_Final> python .\model_vae\run.py
+Loading train and validation datasets...
+Initializing BindVAE-Lite on: cpu
+Extracting 5-mers and biological cheat codes...
+Extracting 5-mers and biological cheat codes...
+
+Starting Fast Training (Epoch 1 to 10)...
+Epoch 1/10 | Train Loss: 129.1448 | Val Loss: 124.7131 | Val Cls: 0.8410 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.737 | PRC: 0.396] || REST [ROC: 0.743 | PRC: 0.325] || EP300 [ROC: 0.757 | PRC: 0.204]
+Epoch 2/10 | Train Loss: 117.5192 | Val Loss: 121.8365 | Val Cls: 0.8362 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.742 | PRC: 0.403] || REST [ROC: 0.743 | PRC: 0.325] || EP300 [ROC: 0.761 | PRC: 0.210]
+Epoch 3/10 | Train Loss: 115.1535 | Val Loss: 119.9930 | Val Cls: 0.8273 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.744 | PRC: 0.408] || REST [ROC: 0.747 | PRC: 0.330] || EP300 [ROC: 0.766 | PRC: 0.223]
+Epoch 4/10 | Train Loss: 113.6401 | Val Loss: 119.1378 | Val Cls: 0.8299 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.747 | PRC: 0.415] || REST [ROC: 0.748 | PRC: 0.333] || EP300 [ROC: 0.773 | PRC: 0.235]
+Epoch 5/10 | Train Loss: 112.4823 | Val Loss: 118.1771 | Val Cls: 0.8249 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.748 | PRC: 0.417] || REST [ROC: 0.749 | PRC: 0.331] || EP300 [ROC: 0.774 | PRC: 0.243]
+Epoch 6/10 | Train Loss: 111.6387 | Val Loss: 117.6812 | Val Cls: 0.8226 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.748 | PRC: 0.418] || REST [ROC: 0.751 | PRC: 0.336] || EP300 [ROC: 0.778 | PRC: 0.249]
+Epoch 7/10 | Train Loss: 111.0393 | Val Loss: 117.4864 | Val Cls: 0.8245 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.416] || REST [ROC: 0.750 | PRC: 0.337] || EP300 [ROC: 0.778 | PRC: 0.250]
+Epoch 8/10 | Train Loss: 110.5046 | Val Loss: 117.5259 | Val Cls: 0.8290
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.417] || REST [ROC: 0.750 | PRC: 0.335] || EP300 [ROC: 0.778 | PRC: 0.246]
+Epoch 9/10 | Train Loss: 109.9666 | Val Loss: 117.7043 | Val Cls: 0.8359
+    -> Stats: CTCF [ROC: 0.748 | PRC: 0.415] || REST [ROC: 0.747 | PRC: 0.333] || EP300 [ROC: 0.774 | PRC: 0.242]
+Epoch 10/10 | Train Loss: 109.4215 | Val Loss: 117.8483 | Val Cls: 0.8410
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.420] || REST [ROC: 0.749 | PRC: 0.337] || EP300 [ROC: 0.773 | PRC: 0.247]
+
+Extracting 5-mers and biological cheat codes...
+Inference: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 359/359 [00:02<00:00, 127.75it/s]
+Extracting latent space vectors for downstream analysis...
+Extracting 5-mers and biological cheat codes...
+Extracting Latent Space: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 359/359 [00:01<00:00, 261.24it/s]
+
+Pipeline complete! All plots, models, and latent vectors saved to: model_vae/results_latest/
+(base) PS C:\Users\lokes\Desktop\CFG_Final> 

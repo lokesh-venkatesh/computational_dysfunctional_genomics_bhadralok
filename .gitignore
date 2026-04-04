@@ -1,7 +1,8 @@
 data/*.csv
-model_cvae/**/checkpoints/*.pth
-model_cvae/**/*.npy
 data/projectData/*.tsv
 data/
 model_cvae/
 peaks/
+model_vae/**/checkpoints/*.pth
+model_vae/**/*.npy
+model_svm/results_latest/checkpoints/

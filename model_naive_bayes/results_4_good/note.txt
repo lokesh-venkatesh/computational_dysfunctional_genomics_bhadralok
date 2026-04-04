@@ -1,0 +1,17 @@
+self.feature_flags = {
+            'use_3mers': False,       # 64 features
+            'use_4mers': False,       # 256 features
+            'use_5mers': False,      # 1,024 features
+            'use_6mers': False,      # 4,096 features 
+            'use_7mers': False,      # 16,384 features
+            'use_8mers': False,      # 65,536 features (Handled safely via Sparse Matrices)
+            
+            'use_atac': True,        # ATAC-seq Boolean
+            'use_gc_content': True,  # GC%
+            'use_cpg_oe': True,      # CpG Observed/Expected
+            'use_entropy': True,     # Shannon Entropy
+            
+            'use_pwm_max': True,     # Max PWM log-odds score
+            'use_pwm_sum': True,     # Sum of positive PWM scores
+            'use_pwm_hits': True     # Count of positive PWM hits
+        }

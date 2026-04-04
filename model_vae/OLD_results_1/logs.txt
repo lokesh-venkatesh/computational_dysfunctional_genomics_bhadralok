@@ -1,0 +1,45 @@
+(base) PS C:\Users\lokes\Desktop\CFG_Final> python .\model_cvae\run.py
+Loading train and validation datasets...
+Initializing BindVAE-Lite on: cpu
+Extracting 4-mers...
+Extracting 4-mers...
+
+Starting Fast Training...
+Epoch 1/30 | Train Loss: 63.2135 | Val Loss: 58.8294 | Val Cls: 0.3330 (Saved Best!)
+Epoch 2/30 | Train Loss: 54.8530 | Val Loss: 54.9849 | Val Cls: 0.3279 (Saved Best!)
+Epoch 3/30 | Train Loss: 52.2052 | Val Loss: 52.8852 | Val Cls: 0.3263 (Saved Best!)
+Epoch 4/30 | Train Loss: 50.6689 | Val Loss: 51.6108 | Val Cls: 0.3242 (Saved Best!)
+Epoch 5/30 | Train Loss: 49.7477 | Val Loss: 50.8611 | Val Cls: 0.3238 (Saved Best!)
+Epoch 6/30 | Train Loss: 49.1923 | Val Loss: 50.5332 | Val Cls: 0.3244 (Saved Best!)
+Epoch 7/30 | Train Loss: 48.8843 | Val Loss: 50.2275 | Val Cls: 0.3229 (Saved Best!)
+Epoch 8/30 | Train Loss: 48.6682 | Val Loss: 50.1030 | Val Cls: 0.3234 (Saved Best!)
+Epoch 9/30 | Train Loss: 48.5202 | Val Loss: 50.0087 | Val Cls: 0.3233 (Saved Best!)
+Epoch 10/30 | Train Loss: 48.4004 | Val Loss: 49.8518 | Val Cls: 0.3225 (Saved Best!)
+Epoch 11/30 | Train Loss: 48.3031 | Val Loss: 49.8215 | Val Cls: 0.3227 (Saved Best!)
+Epoch 12/30 | Train Loss: 48.2158 | Val Loss: 49.7975 | Val Cls: 0.3233 (Saved Best!)
+Epoch 13/30 | Train Loss: 48.1363 | Val Loss: 49.6778 | Val Cls: 0.3228 (Saved Best!)
+Epoch 14/30 | Train Loss: 48.0639 | Val Loss: 49.6362 | Val Cls: 0.3230 (Saved Best!)
+Epoch 15/30 | Train Loss: 48.0114 | Val Loss: 49.5697 | Val Cls: 0.3225 (Saved Best!)
+Epoch 16/30 | Train Loss: 47.9447 | Val Loss: 49.4498 | Val Cls: 0.3217 (Saved Best!)
+Epoch 17/30 | Train Loss: 47.8856 | Val Loss: 49.4701 | Val Cls: 0.3225
+Epoch 18/30 | Train Loss: 47.8446 | Val Loss: 49.3860 | Val Cls: 0.3219 (Saved Best!)
+Epoch 19/30 | Train Loss: 47.7839 | Val Loss: 49.3889 | Val Cls: 0.3225
+Epoch 20/30 | Train Loss: 47.7485 | Val Loss: 49.3330 | Val Cls: 0.3218 (Saved Best!)
+Epoch 21/30 | Train Loss: 47.7052 | Val Loss: 49.2918 | Val Cls: 0.3215 (Saved Best!)
+Epoch 22/30 | Train Loss: 47.6632 | Val Loss: 49.2881 | Val Cls: 0.3219 (Saved Best!)
+Epoch 23/30 | Train Loss: 47.6337 | Val Loss: 49.2801 | Val Cls: 0.3221 (Saved Best!)
+Epoch 24/30 | Train Loss: 47.5956 | Val Loss: 49.1845 | Val Cls: 0.3210 (Saved Best!)
+Epoch 25/30 | Train Loss: 47.5575 | Val Loss: 49.2512 | Val Cls: 0.3222
+Epoch 26/30 | Train Loss: 47.5206 | Val Loss: 49.1461 | Val Cls: 0.3214 (Saved Best!)
+Epoch 27/30 | Train Loss: 47.4930 | Val Loss: 49.1572 | Val Cls: 0.3221
+Epoch 28/30 | Train Loss: 47.4508 | Val Loss: 49.1109 | Val Cls: 0.3219 (Saved Best!)
+Epoch 29/30 | Train Loss: 47.4077 | Val Loss: 49.0835 | Val Cls: 0.3219 (Saved Best!)
+Epoch 30/30 | Train Loss: 47.3839 | Val Loss: 49.0794 | Val Cls: 0.3215 (Saved Best!)
+Extracting 4-mers...
+Inference: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 359/359 [00:01<00:00, 353.37it/s]
+Extracting latent space vectors for downstream analysis...
+Extracting 4-mers...
+Extracting Latent Space: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 359/359 [00:00<00:00, 561.79it/s]
+
+Pipeline complete! All plots, models, and latent vectors saved to: model_cvae/results_latest/
+(base) PS C:\Users\lokes\Desktop\CFG_Final> 

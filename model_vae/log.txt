@@ -1,0 +1,21 @@
+(base) PS C:\Users\lokes\Desktop\CFG_Final> python .\model_vae\run.py
+Loading train and validation datasets...
+Initializing Dual-Stream BindVAE on: cpu
+Extracting 5-mers and biological cheat codes...
+Extracting 5-mers and biological cheat codes...
+
+Starting Dual-Stream Training (Epoch 1 to 20)...
+Epoch 1/20 | Train Loss: 819.5561 | Val Loss: 911.1008 | Val Cls: 0.8308 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.739 | PRC: 0.396] || REST [ROC: 0.745 | PRC: 0.327] || EP300 [ROC: 0.762 | PRC: 0.207]
+Epoch 2/20 | Train Loss: 773.0123 | Val Loss: 899.9569 | Val Cls: 0.8205 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.416] || REST [ROC: 0.749 | PRC: 0.335] || EP300 [ROC: 0.776 | PRC: 0.243]
+Epoch 3/20 | Train Loss: 760.5886 | Val Loss: 896.8813 | Val Cls: 0.8180 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.752 | PRC: 0.422] || REST [ROC: 0.753 | PRC: 0.342] || EP300 [ROC: 0.779 | PRC: 0.250]
+Epoch 4/20 | Train Loss: 751.8229 | Val Loss: 896.4868 | Val Cls: 0.8179 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.753 | PRC: 0.425] || REST [ROC: 0.752 | PRC: 0.343] || EP300 [ROC: 0.780 | PRC: 0.254]
+Epoch 5/20 | Train Loss: 744.9105 | Val Loss: 900.3198 | Val Cls: 0.8220
+    -> Stats: CTCF [ROC: 0.751 | PRC: 0.422] || REST [ROC: 0.749 | PRC: 0.340] || EP300 [ROC: 0.779 | PRC: 0.252]
+Epoch 6/20 | Train Loss: 736.1713 | Val Loss: 904.2322 | Val Cls: 0.8261
+    -> Stats: CTCF [ROC: 0.751 | PRC: 0.424] || REST [ROC: 0.751 | PRC: 0.343] || EP300 [ROC: 0.776 | PRC: 0.251]
+Epoch 7/20 | Train Loss: 727.5766 | Val Loss: 914.2156 | Val Cls: 0.8363
+    -> Stats: CTCF [ROC: 0.751 | PRC: 0.421] || REST [ROC: 0.750 | PRC: 0.340] || EP300 [ROC: 0.772 | PRC: 0.243]

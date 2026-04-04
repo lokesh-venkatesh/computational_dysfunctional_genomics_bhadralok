@@ -1,0 +1,41 @@
+(base) PS C:\Users\lokes\Desktop\CFG_Final> python .\model_vae\run.py
+Loading train and validation datasets...
+Initializing Dual-Stream BindVAE on: cpu
+Extracting 5-mers and biological cheat codes...
+Extracting 5-mers and biological cheat codes...
+
+Starting Dual-Stream Training (Epoch 1 to 100)...
+Epoch 1/100 | Train Loss: 119.8875 | Val Loss: 118.7655 | Val Cls: 0.8415 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.732 | PRC: 0.387] || REST [ROC: 0.740 | PRC: 0.320] || EP300 [ROC: 0.755 | PRC: 0.195]
+Epoch 2/100 | Train Loss: 111.3691 | Val Loss: 117.2397 | Val Cls: 0.8341 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.738 | PRC: 0.396] || REST [ROC: 0.747 | PRC: 0.329] || EP300 [ROC: 0.761 | PRC: 0.214]
+Epoch 3/100 | Train Loss: 109.8293 | Val Loss: 115.9627 | Val Cls: 0.8316 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.743 | PRC: 0.405] || REST [ROC: 0.747 | PRC: 0.331] || EP300 [ROC: 0.770 | PRC: 0.232]
+Epoch 4/100 | Train Loss: 108.6550 | Val Loss: 115.1103 | Val Cls: 0.8254 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.747 | PRC: 0.414] || REST [ROC: 0.748 | PRC: 0.333] || EP300 [ROC: 0.776 | PRC: 0.243]
+Epoch 5/100 | Train Loss: 107.9368 | Val Loss: 114.8012 | Val Cls: 0.8248 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.417] || REST [ROC: 0.751 | PRC: 0.337] || EP300 [ROC: 0.775 | PRC: 0.243]
+Epoch 6/100 | Train Loss: 107.3544 | Val Loss: 114.9284 | Val Cls: 0.8323
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.417] || REST [ROC: 0.749 | PRC: 0.332] || EP300 [ROC: 0.776 | PRC: 0.245]
+Epoch 7/100 | Train Loss: 106.7674 | Val Loss: 114.6755 | Val Cls: 0.8305 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.420] || REST [ROC: 0.749 | PRC: 0.335] || EP300 [ROC: 0.773 | PRC: 0.239]
+Epoch 8/100 | Train Loss: 106.2050 | Val Loss: 114.6794 | Val Cls: 0.8330
+    -> Stats: CTCF [ROC: 0.750 | PRC: 0.420] || REST [ROC: 0.750 | PRC: 0.335] || EP300 [ROC: 0.774 | PRC: 0.243]
+Epoch 9/100 | Train Loss: 105.6360 | Val Loss: 114.7753 | Val Cls: 0.8382
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.420] || REST [ROC: 0.747 | PRC: 0.332] || EP300 [ROC: 0.771 | PRC: 0.239]
+Epoch 10/100 | Train Loss: 105.0289 | Val Loss: 115.2435 | Val Cls: 0.8498
+    -> Stats: CTCF [ROC: 0.746 | PRC: 0.415] || REST [ROC: 0.746 | PRC: 0.330] || EP300 [ROC: 0.771 | PRC: 0.240]
+Epoch 11/100 | Train Loss: 104.5465 | Val Loss: 115.2337 | Val Cls: 0.8504
+    -> Stats: CTCF [ROC: 0.749 | PRC: 0.420] || REST [ROC: 0.747 | PRC: 0.336] || EP300 [ROC: 0.770 | PRC: 0.247]
+Epoch 12/100 | Train Loss: 103.5029 | Val Loss: 116.0983 | Val Cls: 0.8690
+    -> Stats: CTCF [ROC: 0.747 | PRC: 0.416] || REST [ROC: 0.745 | PRC: 0.332] || EP300 [ROC: 0.769 | PRC: 0.242]
+Epoch 13/100 | Train Loss: 103.0874 | Val Loss: 116.4560 | Val Cls: 0.8769
+    -> Stats: CTCF [ROC: 0.744 | PRC: 0.412] || REST [ROC: 0.742 | PRC: 0.324] || EP300 [ROC: 0.763 | PRC: 0.235]
+Epoch 14/100 | Train Loss: 102.7560 | Val Loss: 116.7791 | Val Cls: 0.8828
+    -> Stats: CTCF [ROC: 0.746 | PRC: 0.415] || REST [ROC: 0.743 | PRC: 0.325] || EP300 [ROC: 0.764 | PRC: 0.238]
+Epoch 15/100 | Train Loss: 102.4284 | Val Loss: 117.5624 | Val Cls: 0.8990
+    -> Stats: CTCF [ROC: 0.744 | PRC: 0.412] || REST [ROC: 0.740 | PRC: 0.322] || EP300 [ROC: 0.764 | PRC: 0.238]
+Epoch 16/100 | Train Loss: 102.2063 | Val Loss: 117.7872 | Val Cls: 0.9034
+    -> Stats: CTCF [ROC: 0.744 | PRC: 0.412] || REST [ROC: 0.740 | PRC: 0.324] || EP300 [ROC: 0.759 | PRC: 0.233]
+Epoch 17/100 | Train Loss: 101.8652 | Val Loss: 118.5223 | Val Cls: 0.9186
+    -> Stats: CTCF [ROC: 0.743 | PRC: 0.411] || REST [ROC: 0.740 | PRC: 0.322] || EP300 [ROC: 0.757 | PRC: 0.229]

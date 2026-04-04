@@ -1,0 +1,41 @@
+(base) PS C:\Users\lokes\Desktop\CFG_Final> python .\model_vae\run.py
+Loading train and validation datasets...
+Initializing BindVAE-Lite on: cpu
+Extracting 5-mers and biological cheat codes...
+C:\Users\lokes\anaconda3\Lib\site-packages\sklearn\feature_extraction\text.py:1380: UserWarning: Upper case characters found in vocabulary while 'lowercase' is True. These entries will not be matched with any documents
+  warnings.warn(
+Extracting 5-mers and biological cheat codes...
+
+Starting Fast Training (Epoch 1 to 100)...
+Epoch 1/100 | Train Loss: 24.1679 | Val Loss: 21.3181 | Val Cls: 0.3214 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.717 | PRC: 0.375] || REST [ROC: 0.725 | PRC: 0.302] || EP300 [ROC: 0.723 | PRC: 0.166]
+Epoch 2/100 | Train Loss: 17.9589 | Val Loss: 19.4348 | Val Cls: 0.3167 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.722 | PRC: 0.379] || REST [ROC: 0.730 | PRC: 0.309] || EP300 [ROC: 0.733 | PRC: 0.180]
+Epoch 3/100 | Train Loss: 16.6744 | Val Loss: 18.8005 | Val Cls: 0.3168 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.725 | PRC: 0.381] || REST [ROC: 0.732 | PRC: 0.311] || EP300 [ROC: 0.737 | PRC: 0.186]
+Epoch 4/100 | Train Loss: 16.1190 | Val Loss: 18.4801 | Val Cls: 0.3164 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.724 | PRC: 0.384] || REST [ROC: 0.737 | PRC: 0.322] || EP300 [ROC: 0.735 | PRC: 0.184]
+Epoch 5/100 | Train Loss: 15.8340 | Val Loss: 18.3329 | Val Cls: 0.3166 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.725 | PRC: 0.383] || REST [ROC: 0.735 | PRC: 0.316] || EP300 [ROC: 0.738 | PRC: 0.181]
+Epoch 6/100 | Train Loss: 15.6592 | Val Loss: 18.1814 | Val Cls: 0.3149 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.729 | PRC: 0.387] || REST [ROC: 0.737 | PRC: 0.318] || EP300 [ROC: 0.738 | PRC: 0.182]
+Epoch 7/100 | Train Loss: 15.5374 | Val Loss: 18.1085 | Val Cls: 0.3152 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.727 | PRC: 0.386] || REST [ROC: 0.736 | PRC: 0.318] || EP300 [ROC: 0.743 | PRC: 0.192]
+Epoch 8/100 | Train Loss: 15.4552 | Val Loss: 17.9936 | Val Cls: 0.3142 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.729 | PRC: 0.386] || REST [ROC: 0.736 | PRC: 0.319] || EP300 [ROC: 0.742 | PRC: 0.194]
+Epoch 9/100 | Train Loss: 15.3866 | Val Loss: 18.0354 | Val Cls: 0.3149
+    -> Stats: CTCF [ROC: 0.728 | PRC: 0.386] || REST [ROC: 0.736 | PRC: 0.318] || EP300 [ROC: 0.740 | PRC: 0.187]
+Epoch 10/100 | Train Loss: 15.3288 | Val Loss: 17.9511 | Val Cls: 0.3140 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.728 | PRC: 0.387] || REST [ROC: 0.738 | PRC: 0.320] || EP300 [ROC: 0.745 | PRC: 0.193]
+Epoch 11/100 | Train Loss: 15.2835 | Val Loss: 17.9528 | Val Cls: 0.3147
+    -> Stats: CTCF [ROC: 0.731 | PRC: 0.387] || REST [ROC: 0.737 | PRC: 0.319] || EP300 [ROC: 0.742 | PRC: 0.189]
+Epoch 12/100 | Train Loss: 15.2367 | Val Loss: 17.9177 | Val Cls: 0.3144 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.727 | PRC: 0.385] || REST [ROC: 0.739 | PRC: 0.321] || EP300 [ROC: 0.743 | PRC: 0.192]
+Epoch 13/100 | Train Loss: 15.1934 | Val Loss: 17.8284 | Val Cls: 0.3137 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.728 | PRC: 0.385] || REST [ROC: 0.738 | PRC: 0.321] || EP300 [ROC: 0.744 | PRC: 0.190]
+Epoch 14/100 | Train Loss: 15.1574 | Val Loss: 17.8321 | Val Cls: 0.3136
+    -> Stats: CTCF [ROC: 0.727 | PRC: 0.385] || REST [ROC: 0.738 | PRC: 0.322] || EP300 [ROC: 0.742 | PRC: 0.190]
+Epoch 15/100 | Train Loss: 15.1302 | Val Loss: 17.8574 | Val Cls: 0.3142
+    -> Stats: CTCF [ROC: 0.729 | PRC: 0.387] || REST [ROC: 0.739 | PRC: 0.323] || EP300 [ROC: 0.744 | PRC: 0.190]
+Epoch 16/100 | Train Loss: 15.1079 | Val Loss: 17.8555 | Val Cls: 0.3139
+    -> Stats: CTCF [ROC: 0.729 | PRC: 0.386] || REST [ROC: 0.740 | PRC: 0.323] || EP300 [ROC: 0.743 | PRC: 0.191]
