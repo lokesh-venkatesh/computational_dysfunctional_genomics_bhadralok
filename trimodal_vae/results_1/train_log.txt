@@ -1,0 +1,11 @@
+(base) PS C:\Users\lokes\Desktop\CFG_Final> python .\trimodal_vae\run.py                
+Tri-Modal VAE initialized on cpu | Context Kmers: True
+Epoch 1/1 | Train Loss: 360.1772 | Val Loss: 352.0723 (Saved Best!)
+    -> Stats: CTCF [ROC: 0.899 | PRC: 0.341] || REST [ROC: 0.909 | PRC: 0.225] || EP300 [ROC: 0.924 | PRC: 0.175]
+
+Running Inference on Validation Data...
+Inference: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1357/1357 [01:46<00:00, 12.79it/s]
+
+Generating Metrics and Plots...
+Done! Saved to model_trimodal/results_latest
+(base) PS C:\Users\lokes\Desktop\CFG_Final> 

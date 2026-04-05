@@ -1,11 +1,37 @@
-import os, glob, numpy as np, pandas as pd
+import os
+import glob
+import contextlib
+import joblib
+import numpy as np
+import pandas as pd
 from collections import Counter
 from itertools import product
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 PWM_DIR = "./pwms/"
 CTCF_PWM_FILE = "MA0139.1.pfm"
 REST_PWM_FILE = "MA0138.2.pfm"
+
+# ==========================================
+# tqdm + joblib integration
+# ==========================================
+@contextlib.contextmanager
+def tqdm_joblib(tqdm_object):
+    """Context manager to patch joblib to report into tqdm progress bar"""
+    class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
+        def __call__(self, *args, **kwargs):
+            tqdm_object.update(n=self.batch_size)
+            return super().__call__(*args, **kwargs)
+
+    old_batch_callback = joblib.parallel.BatchCompletionCallBack
+    joblib.parallel.BatchCompletionCallBack = TqdmBatchCompletionCallback
+    try:
+        yield tqdm_object
+    finally:
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
+
+# ==========================================
 
 def load_pwm(file_path):
     matrix = []
@@ -45,7 +71,7 @@ def process_chunk(df_chunk, kmer_vocab, ctcf_pwm, rest_pwm, ep300_pwms):
         length = len(seq)
         gc = (seq.count('G') + seq.count('C')) / max(length, 1)
         cpg = (seq.count('CG') * length) / max(seq.count('C') * seq.count('G'), 1)
-        at_tracts = sum(1 for tract in seq.split('C') for t in tract.split('G') if len(t) >= 4) # Approximation of AT-tracts
+        at_tracts = sum(1 for tract in seq.split('C') for t in tract.split('G') if len(t) >= 4)
         atac = 1.0 if ('ATAC' in row and row['ATAC'] != 'U') else 0.0
         base_cheats.append([atac, gc, cpg, at_tracts])
         
@@ -67,10 +93,10 @@ def process_chunk(df_chunk, kmer_vocab, ctcf_pwm, rest_pwm, ep300_pwms):
     return np.array(local_kmers), np.array(context_kmers), np.array(base_cheats), np.array(ctcf_scores), np.array(rest_scores), np.array(ep300_scores)
 
 def compile_dataset(csv_path, out_prefix):
-    print(f"\nProcessing {csv_path}...")
+    print(f"\nLoading {csv_path} into memory...")
     df = pd.read_csv(csv_path)
     
-    # Context Grouping Logic (Handling Gaps)
+    print("Mapping context groupings across genomic gaps...")
     df = df.sort_values(by=['chrom', 'start']).reset_index(drop=True)
     df['left_seq'] = np.where((df['chrom'] == df['chrom'].shift(1)) & (df['start'] == df['stop'].shift(1)), df['sequence'].shift(1), 'N'*200)
     df['right_seq'] = np.where((df['chrom'] == df['chrom'].shift(-1)) & (df['stop'] == df['start'].shift(-1)), df['sequence'].shift(-1), 'N'*200)
@@ -82,8 +108,16 @@ def compile_dataset(csv_path, out_prefix):
     
     chunk_size = 5000
     chunks = [df.iloc[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
-    results = Parallel(n_jobs=-1)(delayed(process_chunk)(chk, kmer_vocab, ctcf_pwm, rest_pwm, ep300_pwms) for chk in chunks)
     
+    print(f"Beginning multiprocessing extraction for {out_prefix} data...")
+    # Wrap the Parallel call with our tqdm context manager
+    with tqdm_joblib(tqdm(desc=f"Compiling {out_prefix}", total=len(chunks), unit="chunk")) as pbar:
+        results = Parallel(n_jobs=-1)(
+            delayed(process_chunk)(chk, kmer_vocab, ctcf_pwm, rest_pwm, ep300_pwms) 
+            for chk in chunks
+        )
+    
+    print("Stacking arrays and saving to disk...")
     l_kmers = np.vstack([r[0] for r in results])
     c_kmers = np.vstack([r[1] for r in results])
     b_cheats = np.vstack([r[2] for r in results])
@@ -98,7 +132,7 @@ def compile_dataset(csv_path, out_prefix):
     np.save(f"./data/processed/{out_prefix}_ctcf_pwm.npy", c_scores)
     np.save(f"./data/processed/{out_prefix}_rest_pwm.npy", r_scores)
     np.save(f"./data/processed/{out_prefix}_ep300_pwm.npy", e_scores)
-    print(f"Saved {out_prefix} arrays.")
+    print(f"Successfully saved all {out_prefix} arrays.")
 
 if __name__ == "__main__":
     compile_dataset("./data/train_dataset.csv", "train")

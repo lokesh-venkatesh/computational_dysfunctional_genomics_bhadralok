@@ -2,26 +2,25 @@ import os, time, pandas as pd, numpy as np, matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
 from trimodal_model import TriModalModel
 
-results_dir = "model_trimodal/results_latest"
+results_dir = "trimodal_vae/results_latest"
 checkpoints_dir = os.path.join(results_dir, "checkpoints")
 os.makedirs(checkpoints_dir, exist_ok=True)
 
 # ==========================================
 # GLOBAL HYPERPARAMETERS
 # ==========================================
-USE_CONTEXTUAL_KMERS = True   # TOGGLE: True = 600bp context | False = 200bp local
+USE_CONTEXTUAL_KMERS = True   
 
-epochs = 30
-batch_size = 256
-learning_rate = 1e-4
-beta = 0.1                    # VAE Regularization strength
-lambda_cls = 500.0            # Classification loss multiplier
+epochs = 15                   # INCREASED: VAE needs 10-15 epochs to organize latent space
+batch_size = 1024             # INCREASED: 4x larger for faster epoch processing
+learning_rate = 4e-4          # SCALED: 4x larger to match the batch size rule
+beta = 0.2                    # TARGET VAE Regularization (will anneal from 0 to 0.2)
+lambda_cls = 500.0            
 
 if __name__ == '__main__':
     train_df = pd.read_csv("data/train_dataset.csv")
     val_df = pd.read_csv("data/val_dataset.csv")
 
-    # Ensure pre-processing has been run!
     if not os.path.exists("./data/processed/train_base_cheats.npy"):
         print("ERROR: Run preprocess_features.py first to generate the .npy arrays!")
         exit()
