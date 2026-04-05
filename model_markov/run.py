@@ -10,7 +10,7 @@ from markov_model import MarkovModel
 
 # ========================================== FITTING & INFERERENCE ==========================================
 
-order = 1 # order of the markov model
+order = 6 # order of the markov model
 
 for order in range(0,11):
     tfs = ['CTCF', 'REST', 'EP300']
