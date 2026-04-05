@@ -132,14 +132,6 @@ class TriModalModel:
         )
 
         self.model = TriModalVAE().to(self.device)
-        
-        # UPGRADE: PyTorch 2.0 torch.compile() (With safe fallback for Windows)
-        try:
-            self.model = torch.compile(self.model)
-            print("Successfully compiled model with torch.compile().")
-        except Exception as e:
-            print(f"torch.compile() bypassed (Expected on Windows environments): {e}")
-
         optimizer = optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=1e-3)
         scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=self.lr * 5, steps_per_epoch=len(train_loader), epochs=self.epochs)
         pos_weight = torch.tensor([5.0, 5.0, 5.0]).to(self.device)
@@ -158,32 +150,21 @@ class TriModalModel:
             
             train_loop = tqdm(train_loader, leave=False, desc=f"Epoch {epoch}/{self.epochs} [Train]")
             for x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300, tfs in train_loop:
-                # UPGRADE: Added non_blocking=True
                 x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300, tfs = [t.to(self.device, non_blocking=True) for t in (x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300, tfs)]
-                
-                # UPGRADE: set_to_none=True is slightly faster than standard zero_grad()
                 optimizer.zero_grad(set_to_none=True)
                 
-                # UPGRADE: Automatic Mixed Precision (AMP)
-                with torch.amp.autocast(device_type=device_type, dtype=amp_dtype):
-                    r_seq, r_kmer, logits, mu, logvar = self.model(x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300)
-                    
-                    loss_seq = nn.functional.cross_entropy(r_seq, x_seq.argmax(dim=1), reduction='sum') / x_seq.size(0)
-                    loss_kmer = nn.functional.mse_loss(r_kmer, x_kmer, reduction='sum') / x_kmer.size(0)
-                    kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / x_seq.size(0)
-                    loss_cls = nn.functional.binary_cross_entropy_with_logits(logits, tfs, reduction='mean', pos_weight=pos_weight)
-                    
-                    loss = loss_seq + loss_kmer + (current_beta * kld) + (self.lambda_cls * loss_cls)
+                # STRIPPED OUT AMP: Running native float32 which is much faster on CPUs
+                r_seq, r_kmer, logits, mu, logvar = self.model(x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300)
                 
-                # Scale gradients if CUDA, else standard backprop for CPU
-                if scaler is not None:
-                    scaler.scale(loss).backward()
-                    scaler.step(optimizer)
-                    scaler.update()
-                else:
-                    loss.backward()
-                    optimizer.step()
-                    
+                loss_seq = nn.functional.cross_entropy(r_seq, x_seq.argmax(dim=1), reduction='sum') / x_seq.size(0)
+                loss_kmer = nn.functional.mse_loss(r_kmer, x_kmer, reduction='sum') / x_kmer.size(0)
+                kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / x_seq.size(0)
+                loss_cls = nn.functional.binary_cross_entropy_with_logits(logits, tfs, reduction='mean', pos_weight=pos_weight)
+                
+                loss = loss_seq + loss_kmer + (current_beta * kld) + (self.lambda_cls * loss_cls)
+                
+                loss.backward()
+                optimizer.step()
                 scheduler.step()
                 
                 train_loss += loss.item()
@@ -200,16 +181,15 @@ class TriModalModel:
                 for x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300, tfs in val_loop:
                     x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300, tfs = [t.to(self.device, non_blocking=True) for t in (x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300, tfs)]
                     
-                    # Apply AMP to Validation as well
-                    with torch.amp.autocast(device_type=device_type, dtype=amp_dtype):
-                        r_seq, r_kmer, logits, mu, logvar = self.model(x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300)
-                        
-                        l_seq = nn.functional.cross_entropy(r_seq, x_seq.argmax(dim=1), reduction='sum') / x_seq.size(0)
-                        l_kmer = nn.functional.mse_loss(r_kmer, x_kmer, reduction='sum') / x_kmer.size(0)
-                        l_kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / x_seq.size(0)
-                        l_cls = nn.functional.binary_cross_entropy_with_logits(logits, tfs, reduction='mean', pos_weight=pos_weight)
-                        
-                        batch_val_loss = l_seq + l_kmer + (current_beta * l_kld) + (self.lambda_cls * l_cls)
+                    # STRIPPED OUT AMP
+                    r_seq, r_kmer, logits, mu, logvar = self.model(x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300)
+                    
+                    l_seq = nn.functional.cross_entropy(r_seq, x_seq.argmax(dim=1), reduction='sum') / x_seq.size(0)
+                    l_kmer = nn.functional.mse_loss(r_kmer, x_kmer, reduction='sum') / x_kmer.size(0)
+                    l_kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / x_seq.size(0)
+                    l_cls = nn.functional.binary_cross_entropy_with_logits(logits, tfs, reduction='mean', pos_weight=pos_weight)
+                    
+                    batch_val_loss = l_seq + l_kmer + (current_beta * l_kld) + (self.lambda_cls * l_cls)
                         
                     val_loss += batch_val_loss
                     all_preds.append(torch.sigmoid(logits).cpu().numpy())
@@ -253,8 +233,8 @@ class TriModalModel:
             for x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300, _ in tqdm(loader, desc="Inference"):
                 x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300 = [t.to(self.device, non_blocking=True) for t in (x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300)]
                 
-                with torch.amp.autocast(device_type=device_type, dtype=amp_dtype):
-                    _, _, logits, _, _ = self.model(x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300)
+                # STRIPPED OUT AMP
+                _, _, logits, _, _ = self.model(x_seq, x_kmer, x_cheats, p_ctcf, p_rest, p_ep300)
                 
                 preds.append(torch.sigmoid(logits).cpu().numpy())
         return pd.DataFrame({tf: np.vstack(preds)[:, i] for i, tf in enumerate(['CTCF', 'REST', 'EP300'])}, index=test_df.index)

@@ -12,8 +12,8 @@ os.makedirs(checkpoints_dir, exist_ok=True)
 USE_CONTEXTUAL_KMERS = True   
 
 epochs = 15                   # INCREASED: VAE needs 10-15 epochs to organize latent space
-batch_size = 1024             # INCREASED: 4x larger for faster epoch processing
-learning_rate = 4e-4          # SCALED: 4x larger to match the batch size rule
+batch_size = 256
+learning_rate = 1e-4
 beta = 0.2                    # TARGET VAE Regularization (will anneal from 0 to 0.2)
 lambda_cls = 500.0            
 
