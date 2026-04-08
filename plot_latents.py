@@ -1,75 +1,146 @@
+import os
+import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.decomposition import PCA
-import argparse
+
+def calculate_gc(seq):
+    """Calculates GC percentage of a sequence."""
+    seq = seq.upper()
+    g_count = seq.count('G')
+    c_count = seq.count('C')
+    valid_len = len(seq.replace('N', ''))
+    if valid_len == 0: return 0.0
+    return (g_count + c_count) / valid_len
+
+def calculate_kmer_oe(seq, kmer):
+    """Calculates the Observed/Expected (O/E) ratio of a specific k-mer."""
+    seq = seq.upper()
+    kmer = kmer.upper()
+    k = len(kmer)
+    L = len(seq.replace('N', ''))
+    
+    if L < k: return 0.0
+    
+    # Observed count
+    # Count overlapping occurrences as well (e.g., 'CGCG' in 'CGCGCG' is 2)
+    obs = sum(1 for i in range(len(seq) - k + 1) if seq[i:i+k] == kmer)
+    
+    # Expected count assuming independent nucleotide probabilities
+    prob = 1.0
+    for nuc in kmer:
+        nuc_count = seq.count(nuc)
+        prob *= (nuc_count / L) if L > 0 else 0
+        
+    exp = (L - k + 1) * prob
+    
+    # Return O/E (add a tiny epsilon to avoid division by zero)
+    if exp == 0: return 0.0
+    return obs / exp
+
+def plot_feature(df, x_col, y_col, feature, out_dir, pca_var):
+    """Generates and saves a scatter plot for a given feature."""
+    plt.figure(figsize=(10, 8))
+    
+    # Check if the feature is categorical or continuous
+    is_categorical = df[feature].dtype == 'object' or df[feature].nunique() <= 10
+    
+    if is_categorical:
+        # Categorical Plot (Discrete colors)
+        sns.scatterplot(
+            x=x_col, y=y_col,
+            hue=feature,
+            palette='tab10' if df[feature].nunique() <= 10 else 'tab20',
+            data=df, alpha=0.6, s=15, edgecolor=None
+        )
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title=feature)
+    else:
+        # Continuous Plot (Color gradient)
+        scatter = plt.scatter(
+            df[x_col], df[y_col],
+            c=df[feature],
+            cmap='viridis',
+            alpha=0.6, s=15, edgecolors='none'
+        )
+        cbar = plt.colorbar(scatter)
+        cbar.set_label(feature, rotation=270, labelpad=15)
+
+    plt.title(f'PCA of ProSNP-VAE Latent Space\nColored by {feature}', fontsize=14, fontweight='bold')
+    plt.xlabel(f'Principal Component 1 ({pca_var[0]*100:.1f}% Var)', fontsize=12)
+    plt.ylabel(f'Principal Component 2 ({pca_var[1]*100:.1f}% Var)', fontsize=12)
+    plt.tight_layout()
+    
+    # Save the plot
+    safe_name = feature.replace(":", "_")
+    out_path = os.path.join(out_dir, f"pca_latent_{safe_name}.png")
+    plt.savefig(out_path, dpi=300)
+    plt.close()
+    print(f"  -> Saved plot for '{feature}' to {out_path}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Merge VAE latents with metadata and plot using PCA.")
-    # Assuming you ran extract_latents.py on val_dataset.csv
+    parser = argparse.ArgumentParser(description="Map biological features onto VAE latents using PCA.")
     parser.add_argument("--latents", type=str, default="./data/val_dataset_latents.npy")
-    parser.add_argument("--metadata", type=str, default="./data/val_dataset_metadata.csv")
-    parser.add_argument("--output_csv", type=str, default="./data/val_dataset_combined_latents.csv")
+    # Provide the ORIGINAL CSV so we have the sequence column!
+    parser.add_argument("--data_csv", type=str, default="./data/val_dataset.csv")
+    parser.add_argument("--out_dir", type=str, default="./latent_plots")
+    
+    # Comma-separated list of features to compute and plot
+    parser.add_argument("--features", type=str, 
+                        default="chrom,ATAC,CTCF,gc,kmer:CG,kmer:GATA",
+                        help="Comma-separated list of features to plot. Use 'kmer:SEQ' for k-mer O/E.")
     args = parser.parse_args()
+
+    os.makedirs(args.out_dir, exist_ok=True)
 
     print(f"Loading latents from {args.latents}...")
     latents = np.load(args.latents)
 
-    print(f"Loading metadata from {args.metadata}...")
-    df = pd.read_csv(args.metadata)
-
-    # 1. Combine Latents with Original Metadata
-    # Name the latent columns z_0, z_1, ..., z_255
-    latent_cols = [f"z_{i}" for i in range(latents.shape[1])]
-    latent_df = pd.DataFrame(latents, columns=latent_cols)
+    print(f"Loading original data from {args.data_csv}...")
+    df = pd.read_csv(args.data_csv)
     
-    combined_df = pd.concat([df, latent_df], axis=1)
+    # Standardize chromosome column just in case
+    if 'chrom' not in df.columns and 'chr' in df.columns:
+        df.rename(columns={'chr': 'chrom'}, inplace=True)
 
-    print(f"Saving combined dataset to {args.output_csv}...")
-    combined_df.to_csv(args.output_csv, index=False)
+    if 'sequence' not in df.columns:
+        print("ERROR: The provided data CSV does not have a 'sequence' column!")
+        return
 
-    # 2. Dimensionality Reduction via PCA (256D -> 2D)
+    # 1. Dimensionality Reduction via PCA
     print("Running PCA to reduce 256D space to 2D...")
     pca = PCA(n_components=2, random_state=42)
     latents_2d = pca.fit_transform(latents)
 
-    combined_df['pca_1'] = latents_2d[:, 0]
-    combined_df['pca_2'] = latents_2d[:, 1]
+    df['pca_1'] = latents_2d[:, 0]
+    df['pca_2'] = latents_2d[:, 1]
+    
+    # 2. Process Requested Features
+    features_to_plot = [f.strip() for f in args.features.split(",")]
+    
+    print("\nCalculating and Plotting features:")
+    for feat in features_to_plot:
+        # If it's a GC request
+        if feat.lower() == 'gc':
+            if 'gc' not in df.columns:
+                df['gc'] = df['sequence'].apply(calculate_gc)
+            plot_feature(df, 'pca_1', 'pca_2', 'gc', args.out_dir, pca.explained_variance_ratio_)
+            
+        # If it's a dynamic k-mer request
+        elif feat.lower().startswith('kmer:'):
+            kmer_seq = feat.split(":")[1].upper()
+            df[feat] = df['sequence'].apply(lambda s: calculate_kmer_oe(s, kmer_seq))
+            plot_feature(df, 'pca_1', 'pca_2', feat, args.out_dir, pca.explained_variance_ratio_)
+            
+        # If it's already a column in the dataset (chrom, ATAC, CTCF, etc.)
+        elif feat in df.columns:
+            plot_feature(df, 'pca_1', 'pca_2', feat, args.out_dir, pca.explained_variance_ratio_)
+            
+        else:
+            print(f"  -> Skipping '{feat}': Not recognized and not found in dataset columns.")
 
-    # Dynamically find the chromosome column name for coloring
-    color_col = 'chrom'
-    if 'chrom' not in combined_df.columns:
-        if 'chr' in combined_df.columns: color_col = 'chr'
-        elif 'chromosome' in combined_df.columns: color_col = 'chromosome'
-
-    # 3. Plot the latent space
-    print(f"Plotting latent space colored by {color_col}...")
-    plt.figure(figsize=(12, 8))
-    
-    # We use seaborn for easy mapping of categories to colors
-    sns.scatterplot(
-        x='pca_1', y='pca_2',
-        hue=color_col,
-        palette='tab20', # Great palette for distinguishing multiple categories
-        data=combined_df,
-        alpha=0.6,
-        s=20,
-        edgecolor=None
-    )
-    
-    plt.title('PCA of ProSNP-VAE Latent Space', fontsize=16, fontweight='bold')
-    
-    # Show the explained variance on the axes!
-    plt.xlabel(f'Principal Component 1 ({pca.explained_variance_ratio_[0]*100:.1f}% Variance)', fontsize=12)
-    plt.ylabel(f'Principal Component 2 ({pca.explained_variance_ratio_[1]*100:.1f}% Variance)', fontsize=12)
-    
-    # Move the legend outside the plot so it doesn't cover your data points
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title="Chromosome")
-    plt.tight_layout()
-    
-    # Display the plot, nothing else!
-    plt.show()
+    print(f"\nAll requested plots have been saved to the '{args.out_dir}' folder!")
 
 if __name__ == "__main__":
     main()
