@@ -9,3 +9,6 @@ model_svm/results_latest/checkpoints/
 model_cnn/**/checkpoints/*.pth
 **/**/checkpoints/*.pth
 **/*.npy
+prosnp_vae/**/checkpoints/*.pth
+**/scrap/
+trimodal_vae/**/checkpoints/*.pth

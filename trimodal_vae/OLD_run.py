@@ -1,6 +1,6 @@
 import os, time, pandas as pd, numpy as np, matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
-from trimodal_model import TriModalModel
+from trimodal_vae.OLD_trimodal_model import TriModalModel
 
 results_dir = "trimodal_vae/results_latest"
 checkpoints_dir = os.path.join(results_dir, "checkpoints")

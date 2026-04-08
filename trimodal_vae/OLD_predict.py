@@ -2,14 +2,15 @@ import os
 import torch
 import argparse
 import pandas as pd
-from trimodal_model import TriModalModel, TriModalVAE
+from trimodal_vae.OLD_trimodal_model import TriModalModel, TriModalVAE
 
 def main():
     parser = argparse.ArgumentParser(description="Run Tri-Modal VAE inference on test data.")
     
     # Gives you command-line control over the checkpoint path, with the requested default
     parser.add_argument("--model_path", type=str, 
-                        default="./trimodal_vae/results_latest/checkpoints/best.pth",
+                        default="./trimodal_vae/results_latest/checkpoints/best_colab.pth",
+                        # set the default to best.pth once you are done
                         help="Path to the trained .pth model weights")
     parser.add_argument("--test_csv", type=str, default="./data/test_dataset.csv")
     args = parser.parse_args()
